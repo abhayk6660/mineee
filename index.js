@@ -19,27 +19,27 @@ function startBot() {
     version: CONFIG.version
   });
 
-  // Show chat messages
+  // Show all chats in console
   bot.on("message", msg => console.log("[CHAT] " + msg.toString()));
 
   bot.on("spawn", () => {
     console.log("[BOT] Spawned");
 
-    // Login
+    // --- LOGIN ---
     setTimeout(() => {
       bot.chat(`/login ${CONFIG.password}`);
       console.log("[BOT] Logged in");
     }, 1000);
 
-    // Warp
+    // --- WARP ---
     setTimeout(() => {
       bot.chat(CONFIG.warpCommand);
       console.log("[BOT] Warped to mining");
     }, 2500);
 
-    // Start loops
+    // --- START MINING ---
     setTimeout(() => {
-      console.log("[BOT] Starting AFK Mining…");
+      console.log("[BOT] Starting nonstop left-click mining…");
       startMiningLoop();
       startFixLoop();
       startDurabilityLoop();
@@ -55,32 +55,41 @@ function startBot() {
 }
 
 /* ------------------------------------------------
-   🔥 REAL MINING (NO ROTATE, NO MOVE)
+   🔥 NONSTOP LEFT CLICK MINING (NO ROTATE)
 --------------------------------------------------*/
 function startMiningLoop() {
-  bot.clearControlStates(); // no movement
+  bot.clearControlStates(); // Prevent any accidental movement
 
-  setInterval(async () => {
+  setInterval(() => {
     const block = bot.blockAtCursor(5);
+    let pos;
 
-    if (!block) {
-      console.log("[BOT] No block in front.");
-      return;
+    if (block) {
+      pos = block.position;            // Click real block if exists
+    } else {
+      // Click air forward until block regenerates
+      pos = bot.entity.position.offset(0, 0, 1);
     }
 
-    if (bot.isDigging) return;
+    // Start left-click
+    bot._client.write("block_dig", {
+      status: 0,  // mouse down
+      location: pos,
+      face: 1
+    });
 
-    try {
-      console.log("[BOT] Mining:", block.name);
-      await bot.dig(block, true);  // true = NO ROTATION
-    } catch (err) {
-      console.log("[ERROR] Dig failed:", err.message);
-    }
+    // Hold left-click
+    bot._client.write("block_dig", {
+      status: 1,  // keep clicking
+      location: pos,
+      face: 1
+    });
 
-  }, 50); // Fast cycle = smooth mining
+    console.log("[BOT] Left-clicking...");
+  }, 40); // 25 clicks/sec – perfect for generators
 }
 
-/* ------------ Auto /fix -------------- */
+/* ------------ Auto /fix every 5 min -------------- */
 function startFixLoop() {
   setInterval(() => {
     bot.chat("/fix");
@@ -88,7 +97,7 @@ function startFixLoop() {
   }, 5 * 60 * 1000);
 }
 
-/* ------------ Durability Info ------------ */
+/* ------------ Durability Logging ------------ */
 function startDurabilityLoop() {
   setInterval(() => {
     const tool = bot.heldItem;
