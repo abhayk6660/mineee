@@ -83,7 +83,7 @@ function startMiningLoop() {
     });
 
     console.log("[BOT] Holding left click on:", block.name);
-  }, 80); // Fast / smooth
+  }, 10); // Fast / smooth
 }
 
 /* ------------ Auto /fix -------------- */
