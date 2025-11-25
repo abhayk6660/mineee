@@ -65,7 +65,7 @@ function startMiningLoop() {
 
   setInterval(() => {
     // Swing arm like holding left-click
-    bot.swingArm("right");
+    bot._client.write("arm_animation", { hand: 0 });
 
     // Simulate holding LMB (attack mode)
     bot._client.write("use_item", {
