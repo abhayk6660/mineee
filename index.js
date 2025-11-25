@@ -108,4 +108,12 @@ function startDurabilityLoop() {
     const used = tool.durabilityUsed || 0;
     const remaining = max - used;
 
-    console.log(`[D]()
+    console.log(`[DURABILITY] ${tool.name} => ${remaining}/${max}`);
+
+    if (remaining < 50) {
+      console.log("[WARNING] ⚠ Tool low durability!");
+    }
+  }, 3000);
+}
+
+startBot();
