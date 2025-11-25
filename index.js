@@ -54,31 +54,39 @@ function startBot() {
   });
 }
 
-// ✅ REAL MINING (NO ROTATION)
+/* ------------------------------------------------
+   🔥 CONTINUOUS LEFT CLICK MINING (NO ROTATE)
+--------------------------------------------------*/
 function startMiningLoop() {
-  bot.clearControlStates(); // no move
+  bot.clearControlStates(); // no movement
 
-  setInterval(async () => {
-    const block = bot.blockAtCursor(5); // block directly in front
+  setInterval(() => {
+    const block = bot.blockAtCursor(5); // block in front
 
     if (!block) {
       console.log("[BOT] No block in front.");
       return;
     }
 
-    if (bot.isDigging) return; // prevent double-dig errors
+    // Start left-click (break start)
+    bot._client.write("block_dig", {
+      status: 0, // start digging / left click down
+      location: block.position,
+      face: 1
+    });
 
-    try {
-      console.log("[BOT] Mining:", block.name);
-      await bot.dig(block, true);  // TRUE = no rotation
-    } catch (err) {
-      console.log("[ERROR] Dig failed:", err.message);
-    }
+    // Hold left-click
+    bot._client.write("block_dig", {
+      status: 1, // keep breaking (left click hold)
+      location: block.position,
+      face: 1
+    });
 
-  }, 50);
+    console.log("[BOT] Holding left click on:", block.name);
+  }, 80); // Fast / smooth
 }
 
-// Auto /fix
+/* ------------ Auto /fix -------------- */
 function startFixLoop() {
   setInterval(() => {
     bot.chat("/fix");
@@ -86,7 +94,7 @@ function startFixLoop() {
   }, 5 * 60 * 1000);
 }
 
-// Durability
+/* ------------ Durability Info ------------ */
 function startDurabilityLoop() {
   setInterval(() => {
     const tool = bot.heldItem;
@@ -100,12 +108,4 @@ function startDurabilityLoop() {
     const used = tool.durabilityUsed || 0;
     const remaining = max - used;
 
-    console.log(`[DURABILITY] ${tool.name} => ${remaining}/${max}`);
-
-    if (remaining < 50) {
-      console.log("[WARNING] ⚠ Tool low durability!");
-    }
-  }, 3000);
-}
-
-startBot();
+    console.log(`[D]()
