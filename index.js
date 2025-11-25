@@ -58,35 +58,25 @@ function startBot() {
    🔥 NONSTOP LEFT CLICK MINING (NO ROTATE)
 --------------------------------------------------*/
 function startMiningLoop() {
-  bot.clearControlStates(); // Prevent any accidental movement
+  bot.clearControlStates(); // no movement
 
   setInterval(() => {
     const block = bot.blockAtCursor(5);
-    let pos;
 
     if (block) {
-      pos = block.position;            // Click real block if exists
+      // REAL left-click (attack) on the block
+      bot.swingArm("right"); // animation
+      bot._client.write("use_item", { hand: 0 }); // continuous action
+      bot.attack(block);
+      console.log("[BOT] Attacking block:", block.name);
     } else {
-      // Click air forward until block regenerates
-      pos = bot.entity.position.offset(0, 0, 1);
+      // Still swing even if air (keeps left-click held)
+      bot.swingArm("right");
+      bot._client.write("use_item", { hand: 0 });
+      console.log("[BOT] Clicking air...");
     }
 
-    // Start left-click
-    bot._client.write("block_dig", {
-      status: 0,  // mouse down
-      location: pos,
-      face: 1
-    });
-
-    // Hold left-click
-    bot._client.write("block_dig", {
-      status: 1,  // keep clicking
-      location: pos,
-      face: 1
-    });
-
-    console.log("[BOT] Left-clicking...");
-  }, 40); // 25 clicks/sec – perfect for generators
+  }, 50); // 20 CPS
 }
 
 /* ------------ Auto /fix every 5 min -------------- */
