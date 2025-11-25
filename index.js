@@ -19,27 +19,27 @@ function startBot() {
     version: CONFIG.version
   });
 
-  // Show all chats in console
+  // Show all chat
   bot.on("message", msg => console.log("[CHAT] " + msg.toString()));
 
   bot.on("spawn", () => {
     console.log("[BOT] Spawned");
 
-    // --- LOGIN ---
+    // Login
     setTimeout(() => {
       bot.chat(`/login ${CONFIG.password}`);
       console.log("[BOT] Logged in");
     }, 1000);
 
-    // --- WARP ---
+    // Warp
     setTimeout(() => {
       bot.chat(CONFIG.warpCommand);
       console.log("[BOT] Warped to mining");
     }, 2500);
 
-    // --- START MINING ---
+    // Start loops
     setTimeout(() => {
-      console.log("[BOT] Starting nonstop left-click mining…");
+      console.log("[BOT] Starting OBSIDIAN nonstop mining…");
       startMiningLoop();
       startFixLoop();
       startDurabilityLoop();
@@ -55,28 +55,26 @@ function startBot() {
 }
 
 /* ------------------------------------------------
-   🔥 NONSTOP LEFT CLICK MINING (NO ROTATE)
+   🔥 CONSTANT OBSIDIAN-TIMED LEFT-CLICK MINING
+   - NEVER checks block type
+   - NEVER checks block in front
+   - ALWAYS mines like obsidian
 --------------------------------------------------*/
 function startMiningLoop() {
-  bot.clearControlStates(); // no movement
+  bot.clearControlStates(); // no movement ever
 
   setInterval(() => {
-    const block = bot.blockAtCursor(5);
+    // Swing arm like holding left-click
+    bot.swingArm("right");
 
-    if (block) {
-      // REAL left-click (attack) on the block
-      bot.swingArm("right"); // animation
-      bot._client.write("use_item", { hand: 0 }); // continuous action
-      bot.attack(block);
-      console.log("[BOT] Attacking block:", block.name);
-    } else {
-      // Still swing even if air (keeps left-click held)
-      bot.swingArm("right");
-      bot._client.write("use_item", { hand: 0 });
-      console.log("[BOT] Clicking air...");
-    }
+    // Simulate holding LMB (attack mode)
+    bot._client.write("use_item", {
+      hand: 0
+    });
 
-  }, 50); // 20 CPS
+    console.log("[BOT] Mining (forced OBSIDIAN speed)…");
+
+  }, 250); // perfect obsidian mining click speed (4 CPS)
 }
 
 /* ------------ Auto /fix every 5 min -------------- */
