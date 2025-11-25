@@ -1,4 +1,3 @@
-
 const mineflayer = require("mineflayer");
 
 const CONFIG = {
@@ -20,21 +19,25 @@ function startBot() {
     version: CONFIG.version
   });
 
+  // Show chat messages
   bot.on("message", msg => console.log("[CHAT] " + msg.toString()));
 
   bot.on("spawn", () => {
     console.log("[BOT] Spawned");
 
+    // Login
     setTimeout(() => {
       bot.chat(`/login ${CONFIG.password}`);
       console.log("[BOT] Logged in");
     }, 1000);
 
+    // Warp
     setTimeout(() => {
       bot.chat(CONFIG.warpCommand);
       console.log("[BOT] Warped to mining");
     }, 2500);
 
+    // Start loops
     setTimeout(() => {
       console.log("[BOT] Starting AFK Mining…");
       startMiningLoop();
@@ -51,21 +54,31 @@ function startBot() {
   });
 }
 
+// ✅ REAL MINING (NO ROTATION)
 function startMiningLoop() {
-  bot.clearControlStates();
+  bot.clearControlStates(); // no move
 
-  setInterval(() => {
-    const block = bot.blockAtCursor(5);
+  setInterval(async () => {
+    const block = bot.blockAtCursor(5); // block directly in front
 
-    if (block) {
-      bot.attack(block); 
-      console.log("[BOT] Mining:", block.name);
-    } else {
+    if (!block) {
       console.log("[BOT] No block in front.");
+      return;
     }
-  }, 200);
+
+    if (bot.isDigging) return; // prevent double-dig errors
+
+    try {
+      console.log("[BOT] Mining:", block.name);
+      await bot.dig(block, true);  // TRUE = no rotation
+    } catch (err) {
+      console.log("[ERROR] Dig failed:", err.message);
+    }
+
+  }, 150);
 }
 
+// Auto /fix
 function startFixLoop() {
   setInterval(() => {
     bot.chat("/fix");
@@ -73,6 +86,7 @@ function startFixLoop() {
   }, 5 * 60 * 1000);
 }
 
+// Durability
 function startDurabilityLoop() {
   setInterval(() => {
     const tool = bot.heldItem;
