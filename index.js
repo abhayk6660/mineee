@@ -55,35 +55,29 @@ function startBot() {
 }
 
 /* ------------------------------------------------
-   🔥 CONTINUOUS LEFT CLICK MINING (NO ROTATE)
+   🔥 REAL MINING (NO ROTATE, NO MOVE)
 --------------------------------------------------*/
 function startMiningLoop() {
   bot.clearControlStates(); // no movement
 
-  setInterval(() => {
-    const block = bot.blockAtCursor(5); // block in front
+  setInterval(async () => {
+    const block = bot.blockAtCursor(5);
 
     if (!block) {
       console.log("[BOT] No block in front.");
       return;
     }
 
-    // Start left-click (break start)
-    bot._client.write("block_dig", {
-      status: 0, // start digging / left click down
-      location: block.position,
-      face: 1
-    });
+    if (bot.isDigging) return;
 
-    // Hold left-click
-    bot._client.write("block_dig", {
-      status: 1, // keep breaking (left click hold)
-      location: block.position,
-      face: 1
-    });
+    try {
+      console.log("[BOT] Mining:", block.name);
+      await bot.dig(block, true);  // true = NO ROTATION
+    } catch (err) {
+      console.log("[ERROR] Dig failed:", err.message);
+    }
 
-    console.log("[BOT] Holding left click on:", block.name);
-  }, 1000); // Fast / smooth
+  }, 50); // Fast cycle = smooth mining
 }
 
 /* ------------ Auto /fix -------------- */
