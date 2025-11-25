@@ -75,7 +75,7 @@ function startMiningLoop() {
       console.log("[ERROR] Dig failed:", err.message);
     }
 
-  }, 150);
+  }, 50);
 }
 
 // Auto /fix
